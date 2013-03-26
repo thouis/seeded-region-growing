@@ -1,4 +1,5 @@
 # distutils: language = c++
+# distutils: depends = helper.hxx ../../include/andres/vision/seeded-region-growing.hxx ../../include/andres/marray.hxx
 
 cimport cython
 import numpy as np
@@ -24,9 +25,11 @@ ctypedef fused seedtype:
     np.uint8_t
     np.uint16_t
     np.uint32_t
+    np.uint64_t
     np.int8_t
     np.int16_t
     np.int32_t
+    np.int64_t
 
 
 cpdef _inplace_region_growing(np.ndarray elevation,
@@ -58,8 +61,8 @@ cpdef _inplace_region_growing(np.ndarray elevation,
 
 def inplace_region_growing(elevation,
                            seeds):
-    assert elevation.shape == seeds.shape
-    assert elevation.dtype == np.uint8
+    assert elevation.shape == seeds.shape, "elevation and seeds are not the same shape"
+    assert elevation.dtype == np.uint8, "elevation is not uint8"
     # Unfortunately, Cython doesn't support dispatch on typed arrays of
     # arbitrary dimension, so we fetch the function directly
     try:
