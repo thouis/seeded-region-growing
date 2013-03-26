@@ -124,6 +124,16 @@ seededRegionGrowing(
         }
     }
 
+    // find shape strides for different step directions
+    std::vector<size_t> seed_shape_strides(seeds.dimension());
+    std::vector<size_t> temp_c(seeds.dimension());
+    for (int i = 0; i < seeds.dimension(); i++) temp_c[i] = 0;
+    for (int i = 0; i < seeds.dimension(); i++) {
+        temp_c[i] = 1;
+        seeds.coordinatesToIndex(temp_c.begin(), seed_shape_strides[i]);
+        temp_c[i] = 0;
+    }
+
     // define 256 queues, one for each gray level.
     std::vector<std::queue<size_t> > queues(256);
 
@@ -149,23 +159,25 @@ seededRegionGrowing(
 
             // add unlabeled neighbors to queues
             seeds.indexToCoordinates(j, coordinate.begin());
+            T *seedbase = &(seeds(j));
+            unsigned char *elevationbase = &(elevation(j));
             for(unsigned char d = 0; d < elevation.dimension(); ++d) {
                 if(coordinate[d] != 0) {
-                    size_t k = j - seeds.strides(d);
-                    if (seeds(k) == 0) {
-                        const unsigned char queueIndex = std::max(elevation(k), grayLevel);
-                        seeds(k) = seeds(j); // label pixel
-                        queues[queueIndex].push(k);
+                    if (seedbase[-seeds.strides(d)] == 0) {
+                        const unsigned char queueIndex = \
+                            std::max(elevationbase[-elevation.strides(d)], grayLevel);
+                        seedbase[-seeds.strides(d)] = *seedbase; // label pixel
+                        queues[queueIndex].push(j - seed_shape_strides[d]);
                     }
                 }
             }
             for(unsigned char d = 0; d < elevation.dimension(); ++d) {
                 if(coordinate[d] < seeds.shape(d) - 1) {
-                    size_t k = j + seeds.strides(d);
-                    if (seeds(k) == 0) {
-                        const unsigned char queueIndex = std::max(elevation(k), grayLevel);
-                        seeds(k) = seeds(j); // label pixel
-                        queues[queueIndex].push(k);
+                    if (seedbase[seeds.strides(d)] == 0) {
+                        const unsigned char queueIndex = \
+                            std::max(elevationbase[elevation.strides(d)], grayLevel);
+                        seedbase[seeds.strides(d)] = *seedbase; // label pixel
+                        queues[queueIndex].push(j + seed_shape_strides[d]);
                     }
                 }
             }
@@ -196,14 +208,14 @@ inline bool isAtSeedBorder(
         seeds.indexToCoordinates(index, coordinate.begin());
         for(unsigned char d = 0; d < seeds.dimension(); ++d) {
             if(coordinate[d] != 0) {
-                if (seeds(index - seeds.strides(d)) == 0) {
+                if (*(&seeds(index) - seeds.strides(d)) == 0) {
                     return true;
                 }
             }
         }
         for(unsigned char d = 0; d < seeds.dimension(); ++d) {
             if(coordinate[d] < seeds.shape(d) - 1) {
-                if (seeds(index + seeds.strides(d)) == 0) {
+                if (*(&seeds(index) + seeds.strides(d)) == 0) {
                     return true;
                 }
             }
