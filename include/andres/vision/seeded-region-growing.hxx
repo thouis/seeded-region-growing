@@ -127,8 +127,8 @@ seededRegionGrowing(
     // find shape strides for different step directions
     std::vector<size_t> seed_shape_strides(seeds.dimension());
     std::vector<size_t> temp_c(seeds.dimension());
-    for (int i = 0; i < seeds.dimension(); i++) temp_c[i] = 0;
-    for (int i = 0; i < seeds.dimension(); i++) {
+    for (unsigned char i = 0; i < seeds.dimension(); i++) temp_c[i] = 0;
+    for (unsigned char i = 0; i < seeds.dimension(); i++) {
         temp_c[i] = 1;
         seeds.coordinatesToIndex(temp_c.begin(), seed_shape_strides[i]);
         temp_c[i] = 0;
