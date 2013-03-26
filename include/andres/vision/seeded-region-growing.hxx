@@ -203,7 +203,7 @@ inline bool isAtSeedBorder(
         }
         for(unsigned char d = 0; d < seeds.dimension(); ++d) {
             if(coordinate[d] < seeds.shape(d) - 1) {
-                if (seeds(index - seeds.strides(d)) == 0) {
+                if (seeds(index + seeds.strides(d)) == 0) {
                     return true;
                 }
             }
