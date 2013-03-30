@@ -157,6 +157,7 @@ seededRegionGrowing(
             size_t j = queues[grayLevel].front();
             queues[grayLevel].pop();
 
+            std::cout << "growing " << j << " at " << (int) grayLevel << std::endl;
             // add unlabeled neighbors to queues
             seeds.indexToCoordinates(j, coordinate.begin());
             T *seedbase = &(seeds(j));
@@ -167,6 +168,7 @@ seededRegionGrowing(
                         const unsigned char queueIndex = \
                             std::max(elevationbase[-elevation.strides(d)], grayLevel);
                         seedbase[-seeds.strides(d)] = *seedbase; // label pixel
+                        std::cout << "  adding " << j -  seed_shape_strides[d]<< " at " << (int) queueIndex << std::endl;
                         queues[queueIndex].push(j - seed_shape_strides[d]);
                     }
                 }
@@ -178,6 +180,7 @@ seededRegionGrowing(
                             std::max(elevationbase[elevation.strides(d)], grayLevel);
                         seedbase[seeds.strides(d)] = *seedbase; // label pixel
                         queues[queueIndex].push(j + seed_shape_strides[d]);
+                        std::cout << "  adding " << j + seed_shape_strides[d]<< " at " << (int) queueIndex << std::endl;
                     }
                 }
             }
@@ -200,7 +203,9 @@ inline bool isAtSeedBorder(
     const View<T>& seeds,
     const size_t index
 ) {
+    std::cout << "SeedBorder " << index << std::endl;
     if(seeds(index) == 0) {	
+        std::cout << "  0 not border" << std::endl;
         return false; // not a seed voxel
     }
     else {
@@ -209,6 +214,7 @@ inline bool isAtSeedBorder(
         for(unsigned char d = 0; d < seeds.dimension(); ++d) {
             if(coordinate[d] != 0) {
                 if (*(&seeds(index) - seeds.strides(d)) == 0) {
+                    std::cout << "  border because of -" << (int) d << std::endl;
                     return true;
                 }
             }
@@ -216,10 +222,12 @@ inline bool isAtSeedBorder(
         for(unsigned char d = 0; d < seeds.dimension(); ++d) {
             if(coordinate[d] < seeds.shape(d) - 1) {
                 if (*(&seeds(index) + seeds.strides(d)) == 0) {
+                    std::cout << "  border because of +" << (int) d << std::endl;
                     return true;
                 }
             }
         }
+        std::cout << "  not border" << std::endl;
         return false;
     }
 }
